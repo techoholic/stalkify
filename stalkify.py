@@ -28,9 +28,12 @@ while running:
         else:
             after = int(str(int(time()))+"000")
         file.close()
-        schedule = [{'uri':"4t0OI7XrODjSkAu3bTPmWj", 'dt':dt(2021, 6, 2, 15, 15, 00), 'device':2}, {'uri':"0sY6ZUTh4yoctD8VIXz339", 'dt':dt(2021, 6, 3, 7, 00, 00), 'device':2}, {'uri':"1yOc6FBOVD6zBwOMxiSEEv", 'dt':dt(2021,6,2,21,9,0), 'device':2}]
+        file = open("schedule.json")
+        schedule = json.loads(file.read())
+        file.close()
         for song in schedule:
             song['done'] = False
+            song['dt'] = dt(song['dt'][0], song['dt'][1], song['dt'][2], song['dt'][3], song['dt'][4], song['dt'][5])
         while True:
             for song in schedule:
                 delta = song['dt'] - dt.now()

@@ -6,3 +6,4 @@ ignore
 log.txt
 last_checked.txt
 test.py
+schedule.json
