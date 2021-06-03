@@ -20,6 +20,7 @@ while running:
         scope = "user-library-read user-read-recently-played"
         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID,client_secret=CLIENT_SECRET,redirect_uri=REDIRECT_URI,scope=scope))
         print("Done! Now saving Spotify listens to history.json :)")
+        sp.volume(47, '020b40a16697d1e0ee100bd4fb1495eb401297dd')
 
         file = open("last_checked.txt", 'w+')
         afterStr = file.read()
@@ -35,6 +36,9 @@ while running:
             song['done'] = False
             song['dt'] = dt(song['dt'][0], song['dt'][1], song['dt'][2], song['dt'][3], song['dt'][4], song['dt'][5])
         while True:
+            file = open("schedule.json")
+            schedule = json.loads(file.read())
+            file.close()
             for song in schedule:
                 delta = song['dt'] - dt.now()
                 if delta.total_seconds() <= -125:
