@@ -10,6 +10,8 @@ from os import getenv
 from dotenv import load_dotenv
 
 running = True
+new_on_rep = None
+old_on_rep = None
 while running:
     try:
         print("Authenticating with Spotify...")
@@ -30,6 +32,20 @@ while running:
             after = int(str(int(time()))+"000")
         file.close()
         while True:
+            if dt.now().hour == 0 and dt.now().minute in [0,1]:
+                old_on_rep = new_on_rep
+                new_on_rep = sp.playlist("37i9dQZF1EpgjBoqLLWRQB")
+                if old_on_rep["tracks"]["items"] == new_on_rep["tracks"]["items"]: break
+                sToday = dt.strftime(dt.now(), "%m-%d-%y")
+                with open(f"on_repeat/{sToday}.json", 'w') as f:
+                    or_tracks = []
+                    for s in new_on_rep["tracks"]["items"]:
+                        track = s["track"]
+                        artists = []
+                        for a in enumerate(track['artists']):
+                            artists.append(a[1]['name'])
+                        or_tracks.append({'name':track['name'], 'artists':artists, 'album':track['album']['name'], 'user_link':track['external_urls']['spotify'], 'id':track['id'], 'album_img':track['album']['images'][0]['url']})
+                    f.write(json.dumps(or_tracks))
             file = open("schedule.json")
             schedule = json.loads(file.read())
             file.close()
