@@ -46,20 +46,23 @@ while running:
                             artists.append(a[1]['name'])
                         or_tracks.append({'name':track['name'], 'artists':artists, 'album':track['album']['name'], 'user_link':track['external_urls']['spotify'], 'id':track['id'], 'album_img':track['album']['images'][0]['url']})
                     f.write(json.dumps(or_tracks))
-            file = open("schedule.json")
-            schedule = json.loads(file.read())
-            file.close()
+            with open("schedule.json") as f:
+                schedule = json.loads(f.read())
             for song in schedule:
-                song['done'] = False
                 song['dt'] = dt(song['dt'][0], song['dt'][1], song['dt'][2], song['dt'][3], song['dt'][4], song['dt'][5])
             for song in schedule:
                 delta = song['dt'] - dt.now()
                 if delta.total_seconds() <= -125:
-                    song['done'] = True
-                elif delta.total_seconds() <= 0 and not song['done']:
+                    schedule.remove(song)
+                elif delta.total_seconds() <= 0:
                     device = "020b40a16697d1e0ee100bd4fb1495eb401297dd" if song['device'] == 2 else None
                     sp.start_playback(device_id=device, uris=['spotify:track:'+song['uri']])
-                    song['done'] = True
+                    schedule.remove(song)
+            for song in schedule:
+                song['dt'] = [song['dt'].year, song['dt'].month, song['dt'].day, song['dt'].hour, song['dt'].minute, song['dt'].second]
+            print(schedule)
+            with open("schedule.json", 'w') as f:
+                f.write(json.dumps(schedule))
             tracks = sp.current_user_recently_played(after=after,limit=50)
             if tracks['cursors']:
                 after = tracks['cursors']['after']
