@@ -10,8 +10,6 @@ from os import getenv
 from dotenv import load_dotenv
 
 running = True
-new_on_rep = None
-old_on_rep = None
 while running:
     try:
         print("Authenticating with Spotify...")
@@ -21,6 +19,8 @@ while running:
         REDIRECT_URI = getenv('REDIRECT_URI')
         scope = "user-library-read user-read-recently-played"
         sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID,client_secret=CLIENT_SECRET,redirect_uri=REDIRECT_URI,scope=scope))
+        new_on_rep = sp.playlist("37i9dQZF1EpgjBoqLLWRQB")
+        old_on_rep = None
         print("Done! Now saving Spotify listens to history.json :)")
         #sp.volume(47, '020b40a16697d1e0ee100bd4fb1495eb401297dd')
 
@@ -33,9 +33,12 @@ while running:
         file.close()
         while True:
             if dt.now().hour == 0 and dt.now().minute in [0,1]:
+                print("Checking for updated On Repeat...")
                 old_on_rep = new_on_rep
                 new_on_rep = sp.playlist("37i9dQZF1EpgjBoqLLWRQB")
-                if old_on_rep["tracks"]["items"] == new_on_rep["tracks"]["items"]: break
+                if old_on_rep["tracks"]["items"] == new_on_rep["tracks"]["items"]:
+                    print("On Rep is the same as yesterday! No changes made")
+                    break
                 sToday = dt.strftime(dt.now(), "%m-%d-%y")
                 with open(f"on_repeat/{sToday}.json", 'w') as f:
                     or_tracks = []
@@ -46,6 +49,7 @@ while running:
                             artists.append(a[1]['name'])
                         or_tracks.append({'name':track['name'], 'artists':artists, 'album':track['album']['name'], 'user_link':track['external_urls']['spotify'], 'id':track['id'], 'album_img':track['album']['images'][0]['url']})
                     f.write(json.dumps(or_tracks))
+                    print(f"New On Repeat found. Saved new archive for {sToday}")
             with open("schedule.json") as f:
                 schedule = json.loads(f.read())
             for song in schedule:
